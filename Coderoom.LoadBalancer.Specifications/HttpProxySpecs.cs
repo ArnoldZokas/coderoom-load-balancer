@@ -21,6 +21,8 @@ namespace Coderoom.LoadBalancer.Specifications
 			static Mock<TextReader> textReader;
 			static Mock<IWebRequest> webRequest;
 			static Mock<IWebResponse> webResponse;
+			static Mock<Stream> webResponseStream;
+			Cleanup after = () => HttpProxyConfiguration.ResetToDefault();
 
 			Establish context = () =>
 				{
@@ -28,10 +30,15 @@ namespace Coderoom.LoadBalancer.Specifications
 					portListener = new Mock<IPortListener>();
 					textReader = new Mock<TextReader>();
 					webResponse = new Mock<IWebResponse>();
+					webResponseStream = new Mock<Stream>();
+					
+					webResponse.Setup(x => x.GetResponseStream()).Returns(webResponseStream.Object);
 					webRequest = new Mock<IWebRequest>();
 					webRequest.Setup(x => x.GetResponse()).Returns(webResponse.Object);
+					HttpProxyConfiguration.StreamReaderFactory = (stream, leaveOpen) => textReader.Object;
+					HttpProxyConfiguration.WebRequestFactory = uri => webRequest.Object;
 
-					httpProxy = new HttpProxy(ipEndPoints, portListener.Object, (stream, leaveOpen) => textReader.Object, uri => webRequest.Object);
+					httpProxy = new HttpProxy(ipEndPoints, portListener.Object);
 				};
 
 			Because of = () =>
@@ -49,11 +56,12 @@ namespace Coderoom.LoadBalancer.Specifications
 					tcpClientWrapper.Setup(x => x.GetStream()).Returns(tcpClientStream.Object);
 
 					textReader.Setup(x => x.ReadLine()).Returns("GET / HTTP/1.1");
+					textReader.Setup(x => x.ReadToEnd()).Returns("<p>content</p>");
 
 					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 				};
 
-			It should_ = () => { capturedResponse.ShouldNotBeNull(); };
+			It should_return_response = () => capturedResponse.ShouldContain("<p>content</p>");
 		}
 	}
 }

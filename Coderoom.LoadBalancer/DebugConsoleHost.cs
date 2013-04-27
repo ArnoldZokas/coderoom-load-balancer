@@ -30,7 +30,7 @@ namespace Coderoom.LoadBalancer
 				Console.WriteLine("        * {0}:{1}", contentServer.Address, contentServer.Port);
 
 			var portListener = new PortListener(endPoint);
-			var httpProxy = new HttpProxy(contentServers, portListener, (stream, leaveOpen) => new StreamReader(stream, Encoding.UTF8, true, 1024, leaveOpen), uri => new WebRequestWrapper(WebRequest.Create(uri)));
+			var httpProxy = new HttpProxy(contentServers, portListener);
 			httpProxy.Start();
 
 			Console.WriteLine();

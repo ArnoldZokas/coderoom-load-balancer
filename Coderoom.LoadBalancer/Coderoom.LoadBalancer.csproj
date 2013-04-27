@@ -47,6 +47,7 @@
     <Compile Include="ConnectionEstablishedEventArgs.cs" />
     <Compile Include="DebugConsoleHost.cs" />
     <Compile Include="HttpProxy.cs" />
+    <Compile Include="HttpProxyConfiguration.cs" />
     <Compile Include="PortListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Abstractions\TcpClientWrapper.cs" />

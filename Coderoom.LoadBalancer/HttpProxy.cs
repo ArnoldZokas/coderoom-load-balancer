@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using Coderoom.LoadBalancer.Abstractions;
 
 namespace Coderoom.LoadBalancer
 {
@@ -12,14 +11,10 @@ namespace Coderoom.LoadBalancer
 	{
 		readonly IPortListener _listener;
 		readonly IEnumerable<IPEndPoint> _servers;
-		readonly Func<Stream, bool, TextReader> _streamReaderFactory;
-		readonly Func<Uri, IWebRequest> _webRequestFactory;
 
-		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener, Func<Stream, bool, TextReader> streamReaderFactory, Func<Uri, IWebRequest> webRequestFactory)
+		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener)
 		{
 			_listener = listener;
-			_streamReaderFactory = streamReaderFactory;
-			_webRequestFactory = webRequestFactory;
 			_servers = servers;
 		}
 
@@ -37,11 +32,11 @@ namespace Coderoom.LoadBalancer
 			{
 				var relativeRequestUri = GetRequestUri(clientStream);
 				var requestUri = BuildRequestUri(selectedServer, relativeRequestUri);
-				var proxiedRequest = _webRequestFactory(requestUri);
+				var proxiedRequest = HttpProxyConfiguration.WebRequestFactory(requestUri);
 
 				using (var proxiedResponse = proxiedRequest.GetResponse())
 				using (var proxiedResponseStream = proxiedResponse.GetResponseStream())
-				using (var proxiedResponseStreamReader = _streamReaderFactory(proxiedResponseStream, false))
+				using (var proxiedResponseStreamReader = HttpProxyConfiguration.StreamReaderFactory(proxiedResponseStream, false))
 				{
 					var proxiedResponseBody = proxiedResponseStreamReader.ReadToEnd();
 
@@ -54,7 +49,7 @@ namespace Coderoom.LoadBalancer
 						//	responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, proxiedResponse.Headers[headerKey]));
 						//}
 
-						responseBuilder.AppendLine();
+						//responseBuilder.AppendLine();
 						responseBuilder.Append(proxiedResponseBody);
 
 						var response = responseBuilder.ToString();
@@ -72,7 +67,7 @@ namespace Coderoom.LoadBalancer
 			 * 
 			 */
 
-			using (var clientSstreamReader = _streamReaderFactory(clientStream, true))
+			using (var clientSstreamReader = HttpProxyConfiguration.StreamReaderFactory(clientStream, true))
 			{
 				var requestLine = clientSstreamReader.ReadLine();
 				var requestLineFragments = requestLine.Split(' ');
