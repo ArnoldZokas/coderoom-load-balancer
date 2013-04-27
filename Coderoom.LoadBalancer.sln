@@ -5,6 +5,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coderoom.LoadBalancer", "Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coderoom.LoadBalancer.Service", "Coderoom.LoadBalancer.Service\Coderoom.LoadBalancer.Service.csproj", "{F8DECA4D-8C84-4506-BEBE-E653A0F1EEC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coderoom.LoadBalancer.IntegrationTests", "Coderoom.LoadBalancer.IntegrationTests\Coderoom.LoadBalancer.IntegrationTests.csproj", "{0F784B43-0794-4087-8031-A8DD8FED4A50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coderoom.LoadBalancer.Specifications", "Coderoom.LoadBalancer.Specifications\Coderoom.LoadBalancer.Specifications.csproj", "{A46A3DE9-D01D-4778-AC8D-AF9229C49910}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +23,14 @@ Global
 		{F8DECA4D-8C84-4506-BEBE-E653A0F1EEC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8DECA4D-8C84-4506-BEBE-E653A0F1EEC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8DECA4D-8C84-4506-BEBE-E653A0F1EEC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F784B43-0794-4087-8031-A8DD8FED4A50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F784B43-0794-4087-8031-A8DD8FED4A50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F784B43-0794-4087-8031-A8DD8FED4A50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F784B43-0794-4087-8031-A8DD8FED4A50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A46A3DE9-D01D-4778-AC8D-AF9229C49910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A46A3DE9-D01D-4778-AC8D-AF9229C49910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A46A3DE9-D01D-4778-AC8D-AF9229C49910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A46A3DE9-D01D-4778-AC8D-AF9229C49910}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

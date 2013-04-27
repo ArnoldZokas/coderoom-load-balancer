@@ -3,83 +3,66 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 
 namespace Coderoom.LoadBalancer
 {
 	public class HttpProxy
 	{
-		private readonly TcpListener _listener;
-		private readonly Thread _listenerThread;
+		private readonly IPortListener _listener;
 		private readonly IEnumerable<IPEndPoint> _servers;
 
-		public HttpProxy(IPEndPoint target, IEnumerable<IPEndPoint> servers)
+		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener)
 		{
-			_listener = new TcpListener(target);
+			_listener = listener;
 			_servers = servers;
-			_listenerThread = new Thread(Listen);
 		}
 
 		public void Start()
 		{
-			_listenerThread.Start(_listener);
+			_listener.ConnectionEstablished += ListenerOnConnectionEstablished;
+			_listener.Start();
 		}
 
-		private void Listen(object obj)
+		private void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
 		{
-			var listener = (TcpListener)obj;
-			listener.Start();
+			IPEndPoint selectedServer = _servers.First();
 
-			while (true)
+			using (var clientStream = connectionEstablishedEventArgs.Client.GetStream())
 			{
-				var tcpClient = listener.AcceptTcpClient();
-				
-				ProcessRequest(tcpClient);
-				
-				tcpClient.Close();
-			}
-		}
-
-		private void ProcessRequest(TcpClient client)
-		{
-			var selectedServer = _servers.First();
-
-			using (var stream = client.GetStream())
-			{
-				using (var streamReader = new StreamReader(stream))
+				string path;
+				using (var clientSstreamReader = new StreamReader(clientStream))
 				{
-					var header = streamReader.ReadLine();
-					var path = header.Split(' ')[1];
+					string header = clientSstreamReader.ReadLine();
+					path = header.Split(' ')[1];
+				}
 
-					var requestUri = new Uri(string.Format("http://{0}:{1}{2}", selectedServer.Address, selectedServer.Port, path));
-					var proxiedRequest = WebRequest.Create(requestUri);
+				var requestUri = new Uri(string.Format("http://{0}:{1}{2}", selectedServer.Address, selectedServer.Port, path));
+				WebRequest proxiedRequest = WebRequest.Create(requestUri);
 
-					using (var proxiedResponse = proxiedRequest.GetResponse())
+				using (WebResponse proxiedResponse = proxiedRequest.GetResponse())
+				{
+					using (Stream proxiedResponseStream = proxiedResponse.GetResponseStream())
 					{
-						using (var proxiedResponseStream = proxiedResponse.GetResponseStream())
+						using (var proxiedResponseStreamReader = new StreamReader(proxiedResponseStream))
 						{
-							using (var proxiedResponseStreamReader = new StreamReader(proxiedResponseStream))
+							string proxiedResponseBody = proxiedResponseStreamReader.ReadToEnd();
+
+							var responseBuilder = new StringBuilder();
+							responseBuilder.AppendLine("HTTP/1.1 200 OK");
+							using (var swriter = new StreamWriter(clientStream))
 							{
-								var proxiedResponseBody = proxiedResponseStreamReader.ReadToEnd();
-
-								var responseBuilder = new StringBuilder();
-								responseBuilder.AppendLine("HTTP/1.1 200 OK");
-								using (var swriter = new StreamWriter(stream))
+								foreach (var headerKey in proxiedResponse.Headers.AllKeys)
 								{
-									foreach (var headerKey in proxiedResponse.Headers.AllKeys)
-									{
-										responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, proxiedResponse.Headers[headerKey]));
-									}
-
-									responseBuilder.AppendLine();
-									responseBuilder.Append(proxiedResponseBody);
-
-									var response = responseBuilder.ToString();
-									swriter.Write(response);
-									swriter.Flush();
+									responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, proxiedResponse.Headers[headerKey]));
 								}
+
+								responseBuilder.AppendLine();
+								responseBuilder.Append(proxiedResponseBody);
+
+								string response = responseBuilder.ToString();
+								swriter.Write(response);
+								swriter.Flush();
 							}
 						}
 					}

@@ -9,7 +9,7 @@ namespace Coderoom.LoadBalancer
 	{
 		public static void Main()
 		{
-			var listeningTarge = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 81);
+			var endPoint = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 81);
 			var contentServers = new List<IPEndPoint>
 				{
 					new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8081),
@@ -19,12 +19,13 @@ namespace Coderoom.LoadBalancer
 			Console.WriteLine("SIMPLE LOAD BALANCER");
 			Console.WriteLine("====================");
 			Console.WriteLine("Configuration:");
-			Console.WriteLine("    Target: {0}:{1}", listeningTarge.Address, listeningTarge.Port);
+			Console.WriteLine("    Target: {0}:{1}", endPoint.Address, endPoint.Port);
 			Console.WriteLine("    Content servers:");
 			foreach (IPEndPoint contentServer in contentServers)
 				Console.WriteLine("        * {0}:{1}", contentServer.Address, contentServer.Port);
 
-			var httpProxy = new HttpProxy(listeningTarge, contentServers);
+			var portListener = new PortListener(endPoint);
+			var httpProxy = new HttpProxy(contentServers, portListener);
 			httpProxy.Start();
 
 			Console.WriteLine();
