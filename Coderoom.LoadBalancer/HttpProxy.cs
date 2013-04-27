@@ -30,7 +30,7 @@ namespace Coderoom.LoadBalancer
 
 			using (var clientStream = connectionEstablishedEventArgs.Client.GetStream())
 			{
-				var relativeRequestUri = GetRequestUri(clientStream);
+				var relativeRequestUri = GetRequestUriFromClientStream(clientStream);
 				var requestUri = BuildRequestUri(selectedServer, relativeRequestUri);
 				var proxiedRequest = HttpProxyConfiguration.WebRequestFactory(requestUri);
 
@@ -59,12 +59,11 @@ namespace Coderoom.LoadBalancer
 			}
 		}
 
-		string GetRequestUri(Stream clientStream)
+		string GetRequestUriFromClientStream(Stream clientStream)
 		{
 			/* Request line format per HTTP specification http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1
 			 * 
 			 *		REQUEST-LINE = Method Request-URI HTTP-Version CRLF
-			 * 
 			 */
 
 			using (var clientSstreamReader = HttpProxyConfiguration.StreamReaderFactory(clientStream, true))
