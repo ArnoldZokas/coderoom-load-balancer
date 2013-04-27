@@ -2,14 +2,15 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Coderoom.LoadBalancer.Abstractions;
 
 namespace Coderoom.LoadBalancer
 {
 	public class PortListener : IPortListener
 	{
-		private readonly IPEndPoint _endPoint;
-		private readonly Thread _listenerThread;
-		private bool _stopRequested;
+		readonly IPEndPoint _endPoint;
+		readonly Thread _listenerThread;
+		bool _stopRequested;
 
 		public PortListener(IPEndPoint endPoint)
 		{
@@ -30,7 +31,7 @@ namespace Coderoom.LoadBalancer
 			_listenerThread.Abort();
 		}
 
-		private void ListenForConnections()
+		void ListenForConnections()
 		{
 			var listener = new TcpListener(_endPoint);
 			listener.Start();

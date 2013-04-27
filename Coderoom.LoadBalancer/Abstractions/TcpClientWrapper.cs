@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Sockets;
 
-namespace Coderoom.LoadBalancer
+namespace Coderoom.LoadBalancer.Abstractions
 {
-	public class TcpClientWrapper : ITcpClientWrapper
+	public class TcpClientWrapper : ITcpClient
 	{
-		private readonly TcpClient _client;
+		readonly TcpClient _client;
 
 		public TcpClientWrapper(TcpClient client)
 		{
@@ -18,13 +19,14 @@ namespace Coderoom.LoadBalancer
 			_client.Close();
 		}
 
+		[ExcludeFromCodeCoverage]
 		public Stream GetStream()
 		{
 			return _client.GetStream();
 		}
 	}
 
-	public interface ITcpClientWrapper : IDisposable
+	public interface ITcpClient : IDisposable
 	{
 		Stream GetStream();
 	}

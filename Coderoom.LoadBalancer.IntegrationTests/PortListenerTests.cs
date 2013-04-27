@@ -10,10 +10,10 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 	{
 		public class when_port_listener_receives_connection : IDisposable
 		{
-			private readonly ManualResetEvent _event;
-			private readonly PortListener _listener;
-			private readonly TcpClient _tcpClient;
-			private bool _eventRaised;
+			readonly ManualResetEvent _event;
+			readonly PortListener _listener;
+			readonly TcpClient _tcpClient;
+			bool _eventRaised;
 
 			public when_port_listener_receives_connection()
 			{
@@ -42,7 +42,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 			[Fact]
 			public void it_raises_connection_established_event()
 			{
-				WaitHandle.WaitAll(new[] { _event });
+				WaitHandle.WaitAll(new[] {_event});
 				Assert.True(_eventRaised);
 			}
 		}

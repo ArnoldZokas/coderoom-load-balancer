@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ServiceProcess;
 
 namespace Coderoom.LoadBalancer.Service
 {
-	static class Program
+	internal static class Program
 	{
 		/// <summary>
 		/// The main entry point for the application.
@@ -15,10 +10,10 @@ namespace Coderoom.LoadBalancer.Service
 		static void Main()
 		{
 			ServiceBase[] ServicesToRun;
-			ServicesToRun = new ServiceBase[] 
-            { 
-                new Service1() 
-            };
+			ServicesToRun = new ServiceBase[]
+				{
+					new Service1()
+				};
 			ServiceBase.Run(ServicesToRun);
 		}
 	}
