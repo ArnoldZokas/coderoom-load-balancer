@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using Coderoom.LoadBalancer.Abstractions;
+using Coderoom.LoadBalancer.Specifications.Utilities;
 using Machine.Specifications;
 using Moq;
 using It = Machine.Specifications.It;
@@ -17,29 +18,19 @@ namespace Coderoom.LoadBalancer.Specifications
 
 			Because of = () =>
 				{
-					httpProxy.Start();
-
-					var webHeaderCollection = new WebHeaderCollection();
-					webHeaderCollection.Add("header-1", "value 1");
-					webHeaderCollection.Add("header-2", "value 2");
-					webResponse.Setup(x => x.GetHeaders()).Returns(() => webHeaderCollection);
-
-					var requestIndex = -1;
-					textReader.Setup(x => x.ReadLine()).Returns(() =>
+					webResponse.MockHttpHeaders(new WebHeaderCollection
 						{
-							requestIndex++;
-							switch (requestIndex)
-							{
-								case 0:
-									return "GET / HTTP/1.1";
-								case 1:
-									return "header-1: value 1";
-								case 2:
-									return "header-2: value 2";
-								default:
-									return string.Empty;
-							}
+							{"header-1", "value 1"},
+							{"header-2", "value 2"}
 						});
+
+					textReader.MockRawRequestContent(new[]
+						{
+							"GET / HTTP/1.1",
+							"header-1: value 1",
+							"header-2: value 2"
+						});
+
 					textReader.Setup(x => x.ReadToEnd()).Returns("<p>content</p>");
 
 					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
@@ -57,19 +48,9 @@ namespace Coderoom.LoadBalancer.Specifications
 
 			Because of = () =>
 				{
-					httpProxy.Start();
-
-					var requestIndex = -1;
-					textReader.Setup(x => x.ReadLine()).Returns(() =>
+					textReader.MockRawRequestContent(new[]
 						{
-							requestIndex++;
-							switch (requestIndex)
-							{
-								case 0:
-									return "GET / HTTP/1.1";
-								default:
-									return string.Empty;
-							}
+							"GET / HTTP/1.1"
 						});
 
 					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
@@ -90,8 +71,6 @@ namespace Coderoom.LoadBalancer.Specifications
 		protected static Mock<IWebRequest> webRequest;
 		protected static Mock<IWebResponse> webResponse;
 		protected static Mock<Stream> webResponseStream;
-
-		Cleanup after = () => HttpProxyConfiguration.ResetToDefault();
 
 		Establish context = () =>
 			{
@@ -120,6 +99,9 @@ namespace Coderoom.LoadBalancer.Specifications
 				tcpClientWrapper.Setup(x => x.GetStream()).Returns(tcpClientStream.Object);
 
 				httpProxy = new HttpProxy(ipEndPoints, portListener.Object);
+				httpProxy.Start();
 			};
+
+		Cleanup after = () => HttpProxyConfiguration.ResetToDefault();
 	}
 }
