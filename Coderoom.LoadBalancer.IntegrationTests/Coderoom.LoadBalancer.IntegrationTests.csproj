@@ -39,6 +39,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Abstractions\WebResponseWrapperTests.cs" />
     <Compile Include="Abstractions\WebRequestWrapperTests.cs" />
     <Compile Include="PortListenerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
