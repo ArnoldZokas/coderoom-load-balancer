@@ -29,6 +29,7 @@ namespace Coderoom.LoadBalancer
 			var portListener = new PortListener(endPoint);
 			var httpProxy = new HttpProxy(contentServers, portListener);
 			httpProxy.Start();
+			portListener.ConnectionEstablished += (sender, args) => Console.WriteLine("Connection established");
 
 			Console.WriteLine();
 			Console.WriteLine("Load Balancer started...");

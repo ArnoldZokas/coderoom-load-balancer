@@ -51,6 +51,8 @@
     <Compile Include="PortListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Abstractions\TcpClientWrapper.cs" />
+    <Compile Include="RawHttpRequestParser.cs" />
+    <Compile Include="RawHttpRequestParserResult.cs" />
     <Compile Include="Utilities\StringExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

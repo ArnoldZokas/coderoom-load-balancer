@@ -24,13 +24,29 @@ namespace Coderoom.LoadBalancer.Specifications
 					webHeaderCollection.Add("header-2", "value 2");
 					webResponse.Setup(x => x.GetHeaders()).Returns(() => webHeaderCollection);
 
-					textReader.Setup(x => x.ReadLine()).Returns("GET / HTTP/1.1");
+					var requestIndex = -1; // this is seriously fugly
+					textReader.Setup(x => x.ReadLine()).Returns(() =>
+						{
+							requestIndex++;
+							switch (requestIndex)
+							{
+								case 0:
+									return "GET / HTTP/1.1";
+								case 1:
+									return "header-1: value 1";
+								case 2:
+									return "header-2: value 2";
+								default:
+									return string.Empty;
+							}
+						});
 					textReader.Setup(x => x.ReadToEnd()).Returns("<p>content</p>");
 
 					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 				};
 
-			It should_return_200status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
+			It should_transmit_http_headers = () => webRequest.Verify(x => x.AddHeaders(Moq.It.Is<WebHeaderCollection>(headers => headers.Count == 2)));
+			It should_return_200_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
 			It should_return_http_headers = () => capturedResponse.ShouldContain("header-1: value 1\r\nheader-2: value 2");
 			It should_return_body = () => capturedResponse.ShouldContain("<p>content</p>");
 		}
@@ -40,13 +56,24 @@ namespace Coderoom.LoadBalancer.Specifications
 			Establish context = () => webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 404 Not Found");
 
 			Because of = () =>
-			{
-				httpProxy.Start();
+				{
+					httpProxy.Start();
 
-				textReader.Setup(x => x.ReadLine()).Returns("GET / HTTP/1.1");
+					var requestIndex = -1; // this is seriously fugly
+					textReader.Setup(x => x.ReadLine()).Returns(() =>
+						{
+							requestIndex++;
+							switch (requestIndex)
+							{
+								case 0:
+									return "GET / HTTP/1.1";
+								default:
+									return string.Empty;
+							}
+						});
 
-				portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
-			};
+					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
+				};
 
 			It should_return_404_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 404 Not Found");
 		}
@@ -75,6 +102,7 @@ namespace Coderoom.LoadBalancer.Specifications
 				webResponseStream = new Mock<Stream>();
 
 				webResponse.Setup(x => x.GetResponseStream()).Returns(webResponseStream.Object);
+				webResponse.Setup(x => x.GetHeaders()).Returns(() => new WebHeaderCollection());
 				webRequest = new Mock<IWebRequest>();
 				webRequest.Setup(x => x.GetResponse()).Returns(webResponse.Object);
 

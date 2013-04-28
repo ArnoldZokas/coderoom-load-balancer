@@ -30,9 +30,10 @@ namespace Coderoom.LoadBalancer
 
 			using (var clientStream = connectionEstablishedEventArgs.Client.GetStream())
 			{
-				var relativeRequestUri = GetRequestUriFromClientStream(clientStream);
-				var requestUri = BuildRequestUri(selectedServer, relativeRequestUri);
+				var requestParserResult = HttpProxyConfiguration.RawHttpRequestParser.ParseFromClientStream(clientStream);
+				var requestUri = BuildRequestUri(selectedServer, requestParserResult.RequestUri);
 				var proxiedRequest = HttpProxyConfiguration.WebRequestFactory(requestUri);
+				proxiedRequest.AddHeaders(requestParserResult.RequestHeaders);
 
 				using (var proxiedResponse = proxiedRequest.GetResponse())
 				using (var proxiedResponseStream = proxiedResponse.GetResponseStream())
@@ -57,23 +58,6 @@ namespace Coderoom.LoadBalancer
 						swriter.Write(response);
 					}
 				}
-			}
-		}
-
-		static string GetRequestUriFromClientStream(Stream clientStream)
-		{
-			/* Request line format per HTTP specification http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1
-			 * 
-			 *		REQUEST-LINE = Method Request-URI HTTP-Version CRLF
-			 */
-
-			using (var clientStreamReader = HttpProxyConfiguration.StreamReaderFactory(clientStream, true))
-			{
-				var requestLine = clientStreamReader.ReadLine();
-				var requestLineFragments = requestLine.Split(' ');
-
-				const int pathFragmentPosition = 1;
-				return requestLineFragments[pathFragmentPosition];
 			}
 		}
 
