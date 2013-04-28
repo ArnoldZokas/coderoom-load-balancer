@@ -1,6 +1,6 @@
 *.DotSettings
 *.suo
-**/*.user
+*.user
 
 assets
 build-output
