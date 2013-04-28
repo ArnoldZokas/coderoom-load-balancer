@@ -33,15 +33,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Abstractions\WebRequestWrapper.cs" />
     <Compile Include="Abstractions\WebResponseWrapper.cs" />
     <Compile Include="ConnectionEstablishedEventArgs.cs" />
@@ -54,6 +45,9 @@
     <Compile Include="RawHttpRequestParser.cs" />
     <Compile Include="RawHttpRequestParserResult.cs" />
     <Compile Include="Utilities\StringExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
