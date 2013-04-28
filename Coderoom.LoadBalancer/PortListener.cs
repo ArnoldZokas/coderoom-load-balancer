@@ -27,8 +27,8 @@ namespace Coderoom.LoadBalancer
 			OnStarted(EventArgs.Empty);
 		}
 
-		public event EventHandler<EventArgs> Started;
 		public event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
+		public event EventHandler<EventArgs> Started;
 
 		public void Stop()
 		{

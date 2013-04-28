@@ -15,12 +15,18 @@ namespace Coderoom.LoadBalancer.Abstractions
 			_headerMap = BuildHeaderMap();
 		}
 
+		public HttpWebRequest WebRequest
+		{
+			get { return _webRequest; }
+		}
+
 		public void AddHeaders(WebHeaderCollection headers)
 		{
 			foreach (var headerKey in headers.AllKeys)
 			{
-				var key = headerKey.ToLower();
 				Action<HttpWebRequest, string> mapper;
+				var key = headerKey.ToLower();
+
 				if (_headerMap.TryGetValue(key, out mapper))
 				{
 					mapper(_webRequest, headers[headerKey]);
@@ -87,6 +93,7 @@ namespace Coderoom.LoadBalancer.Abstractions
 
 	public interface IWebRequest
 	{
+		HttpWebRequest WebRequest { get; }
 		void AddHeaders(WebHeaderCollection headers);
 		IWebResponse GetResponse();
 	}

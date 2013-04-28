@@ -35,7 +35,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 				_listener.Started += (sender, args) => _tcpClient.Connect(endPoint);
 				_listener.Start();
 
-				WaitHandle.WaitAll(new WaitHandle[] { _event });
+				WaitHandle.WaitAll(new WaitHandle[] {_event});
 			}
 
 			public void Dispose()
