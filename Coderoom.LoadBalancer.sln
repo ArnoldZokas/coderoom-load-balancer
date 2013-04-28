@@ -11,6 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coderoom.LoadBalancer.Speci
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coderoom.LoadBalancer.Diagnostics", "Coderoom.LoadBalancer.Diagnostics\Coderoom.LoadBalancer.Diagnostics.csproj", "{F6B9CDA6-636C-486E-902D-97DAD213B96F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{592429B7-EAF3-4F9C-A91E-2AFE7EDBC22C}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
