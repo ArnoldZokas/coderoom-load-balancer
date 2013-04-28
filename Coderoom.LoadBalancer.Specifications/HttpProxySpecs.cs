@@ -58,6 +58,13 @@ namespace Coderoom.LoadBalancer.Specifications
 
 			It should_return_404_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 404 Not Found");
 		}
+
+		public class when_stopped : given_an_http_proxy
+		{
+			Because of = () => httpProxy.Stop();
+
+			It should_stop_listener = () => portListener.Verify(x => x.Stop());
+		}
 	}
 
 	public class given_an_http_proxy

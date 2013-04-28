@@ -6,7 +6,7 @@ namespace Coderoom.LoadBalancer.Service
 	{
 		static void Main()
 		{
-			var servicesToRun = new ServiceBase[] { new Host() };
+			var servicesToRun = new ServiceBase[] {new Host()};
 			ServiceBase.Run(servicesToRun);
 		}
 	}

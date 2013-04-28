@@ -27,7 +27,7 @@ namespace Coderoom.LoadBalancer
 		public void Stop()
 		{
 			_listener.ConnectionEstablished -= ListenerOnConnectionEstablished;
-			_listener.Start();
+			_listener.Stop();
 		}
 
 		void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)

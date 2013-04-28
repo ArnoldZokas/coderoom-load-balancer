@@ -28,7 +28,6 @@ namespace Coderoom.LoadBalancer
 		}
 
 		public event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
-		public event EventHandler<EventArgs> Started;
 
 		public void Stop()
 		{
@@ -36,6 +35,8 @@ namespace Coderoom.LoadBalancer
 			_listenerThread.Abort();
 			_listener.Stop();
 		}
+
+		public event EventHandler<EventArgs> Started;
 
 		void ListenForConnections()
 		{
@@ -67,5 +68,6 @@ namespace Coderoom.LoadBalancer
 		event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
 
 		void Start();
+		void Stop();
 	}
 }
