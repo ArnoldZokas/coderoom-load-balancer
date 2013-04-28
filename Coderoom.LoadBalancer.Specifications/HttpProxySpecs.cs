@@ -24,7 +24,7 @@ namespace Coderoom.LoadBalancer.Specifications
 					webHeaderCollection.Add("header-2", "value 2");
 					webResponse.Setup(x => x.GetHeaders()).Returns(() => webHeaderCollection);
 
-					var requestIndex = -1; // this is seriously fugly
+					var requestIndex = -1;
 					textReader.Setup(x => x.ReadLine()).Returns(() =>
 						{
 							requestIndex++;
@@ -59,7 +59,7 @@ namespace Coderoom.LoadBalancer.Specifications
 				{
 					httpProxy.Start();
 
-					var requestIndex = -1; // this is seriously fugly
+					var requestIndex = -1;
 					textReader.Setup(x => x.ReadLine()).Returns(() =>
 						{
 							requestIndex++;
