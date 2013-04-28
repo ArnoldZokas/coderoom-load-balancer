@@ -39,17 +39,27 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Service1.cs">
+    <Compile Include="Host.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Service1.Designer.cs">
-      <DependentUpon>Service1.cs</DependentUpon>
+    <Compile Include="Host.Designer.cs">
+      <DependentUpon>Host.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Coderoom.LoadBalancer.Diagnostics\Coderoom.LoadBalancer.Diagnostics.csproj">
+      <Project>{F6B9CDA6-636C-486E-902D-97DAD213B96F}</Project>
+      <Name>Coderoom.LoadBalancer.Diagnostics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Coderoom.LoadBalancer\Coderoom.LoadBalancer.csproj">
+      <Project>{0E67B839-B0F5-4866-B612-EA9B0A4428A0}</Project>
+      <Name>Coderoom.LoadBalancer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

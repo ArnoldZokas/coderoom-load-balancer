@@ -24,6 +24,12 @@ namespace Coderoom.LoadBalancer
 			_listener.Start();
 		}
 
+		public void Stop()
+		{
+			_listener.ConnectionEstablished -= ListenerOnConnectionEstablished;
+			_listener.Start();
+		}
+
 		void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
 		{
 			var selectedServer = _servers.First();
