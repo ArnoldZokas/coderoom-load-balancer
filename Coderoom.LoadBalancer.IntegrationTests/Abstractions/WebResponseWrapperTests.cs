@@ -2,25 +2,29 @@
 using System.IO;
 using System.Net;
 using Coderoom.LoadBalancer.Abstractions;
-using Xunit;
+using NUnit.Framework;
+using Shouldly;
 
 namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 {
 	public class WebResponseWrapperTests
 	{
+		[TestFixture]
 		public class when_response_stream_is_requested : given_web_response_wrapper, IDisposable
 		{
 			readonly Stream _stream;
 
-			public when_response_stream_is_requested() : base("http://google.com/")
+			public when_response_stream_is_requested()
 			{
+				base.SetUp("http://google.com/");
+
 				_stream = Wrapper.GetResponseStream();
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_return_response()
 			{
-				Assert.NotNull(_stream);
+				_stream.ShouldNotBe(null);
 			}
 
 			public void Dispose()
@@ -30,19 +34,22 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 			}
 		}
 
+		[TestFixture]
 		public class when_status_line_is_requested : given_web_response_wrapper, IDisposable
 		{
 			readonly string _statusLine;
 
-			public when_status_line_is_requested() : base("http://google.com/")
+			public when_status_line_is_requested()
 			{
+				base.SetUp("http://google.com/");
+
 				_statusLine = Wrapper.GetStatusLine();
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_return_status_line()
 			{
-				Assert.Equal("HTTP/1.1 200 OK", _statusLine);
+				_statusLine.ShouldBe("HTTP/1.1 200 OK");
 			}
 
 			public void Dispose()
@@ -51,19 +58,22 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 			}
 		}
 
+		[TestFixture]
 		public class when_headers_are_requested : given_web_response_wrapper, IDisposable
 		{
 			readonly WebHeaderCollection _headers;
 
-			public when_headers_are_requested() : base("http://google.com/")
+			public when_headers_are_requested()
 			{
+				base.SetUp("http://google.com/");
+
 				_headers = Wrapper.GetHeaders();
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_return_headers()
 			{
-				Assert.True(_headers.Count > 0);
+				_headers.Count.ShouldBeGreaterThan(0);
 			}
 
 			public void Dispose()
@@ -77,7 +87,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 	{
 		protected WebResponseWrapper Wrapper;
 
-		protected given_web_response_wrapper(string uri)
+		protected void SetUp(string uri)
 		{
 			Wrapper = new WebResponseWrapper((HttpWebResponse)WebRequest.Create(new Uri(uri)).GetResponse());
 		}

@@ -1,23 +1,25 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Xunit;
+using NUnit.Framework;
+using Shouldly;
 
 namespace Coderoom.LoadBalancer.IntegrationTests
 {
 	public class PortListenerTests
 	{
-		public class when_port_listener_receives_connection : IDisposable
+		[TestFixture]
+		public class when_port_listener_receives_connection
 		{
-			readonly ManualResetEvent _event;
-			readonly PortListener _listener;
-			readonly TcpClient _tcpClient;
+			ManualResetEvent _event;
+			PortListener _listener;
+			TcpClient _tcpClient;
 			Stream _clientStream;
 			bool _eventRaised;
 
-			public when_port_listener_receives_connection()
+			[SetUp]
+			public void SetUp()
 			{
 				_event = new ManualResetEvent(false);
 
@@ -38,19 +40,20 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 				WaitHandle.WaitAll(new WaitHandle[] {_event});
 			}
 
-			public void Dispose()
+			[TearDown]
+			public void TearDown()
 			{
 				_tcpClient.Close();
 				_listener.Stop();
 			}
 
-			[Fact]
+			[Test]
 			public void it_raises_connection_established_event()
 			{
-				Assert.True(_eventRaised);
+				_eventRaised.ShouldBe(true);
 			}
 
-			[Fact]
+			[Test]
 			public void it_raises_returns_client_stream()
 			{
 				Assert.NotNull(_clientStream);

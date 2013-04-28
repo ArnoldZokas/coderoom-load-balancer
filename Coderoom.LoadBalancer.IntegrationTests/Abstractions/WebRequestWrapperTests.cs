@@ -1,58 +1,73 @@
 ﻿using System;
 using System.Net;
 using Coderoom.LoadBalancer.Abstractions;
-using Xunit;
+using NUnit.Framework;
+using Shouldly;
 
 namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 {
 	public class WebRequestWrapperTests
 	{
-		public class when_response_is_requested : given_web_request_wrapper, IDisposable
+		[TestFixture]
+		public class when_response_is_requested : given_web_request_wrapper
 		{
-			readonly IWebResponse _response;
+			IWebResponse _response;
 
-			public when_response_is_requested() : base("http://google.com/")
+			[SetUp]
+			public void SetUp()
 			{
+				base.SetUp("http://google.com/");
+
 				_response = Wrapper.GetResponse();
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_return_response()
 			{
 				Assert.NotNull(_response);
 			}
 
-			public void Dispose()
+			[TearDown]
+			public void TearDown()
 			{
 				_response.Dispose();
 			}
 		}
 
-		public class when_response_to_a_404_request_is_requested : given_web_request_wrapper, IDisposable
+		[TestFixture]
+		public class when_response_to_a_404_request_is_requested : given_web_request_wrapper
 		{
-			readonly IWebResponse _response;
+			IWebResponse _response;
 
-			public when_response_to_a_404_request_is_requested() : base("http://google.com/not-exists")
+			[SetUp]
+			public void SetUp()
 			{
+				base.SetUp("http://google.com/not-exists");
+
 				_response = Wrapper.GetResponse();
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_return_response()
 			{
 				Assert.NotNull(_response);
 			}
 
-			public void Dispose()
+			[TearDown]
+			public void TearDown()
 			{
 				_response.Dispose();
 			}
 		}
 
+		[TestFixture]
 		public class when_headers_are_added : given_web_request_wrapper
 		{
-			public when_headers_are_added() : base("http://google.com/")
+			[SetUp]
+			public void SetUp()
 			{
+				base.SetUp("http://google.com/");
+
 				var webHeaderCollection = new WebHeaderCollection
 					{
 						{"host", "example.com"},
@@ -66,46 +81,46 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 				Wrapper.AddHeaders(webHeaderCollection);
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_not_change_host()
 			{
-				Assert.Equal("google.com", Wrapper.WebRequest.Host);
+				Wrapper.WebRequest.Host.ShouldBe("google.com");
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_not_set_keep_alive()
 			{
-				Assert.True(Wrapper.WebRequest.KeepAlive);
+				Wrapper.WebRequest.KeepAlive.ShouldBe(true);
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_not_set_accept_encoding()
 			{
-				Assert.Null(Wrapper.WebRequest.TransferEncoding);
+				Wrapper.WebRequest.TransferEncoding.ShouldBe(null);
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_set_accept()
 			{
-				Assert.Equal("*", Wrapper.WebRequest.Accept);
+				Wrapper.WebRequest.Accept.ShouldBe("*");
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_set_user_agent()
 			{
-				Assert.Equal("xUnit", Wrapper.WebRequest.UserAgent);
+				Wrapper.WebRequest.UserAgent.ShouldBe("xUnit");
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_set_if_modified_since()
 			{
-				Assert.Equal(new DateTime(2013, 04, 28, 21, 52, 00), Wrapper.WebRequest.IfModifiedSince);
+				Wrapper.WebRequest.IfModifiedSince.ShouldBe(new DateTime(2013, 04, 28, 21, 52, 00));
 			}
 
-			[Fact]
+			[Test]
 			public void it_should_set_custom_header()
 			{
-				Assert.Equal("value-1", Wrapper.WebRequest.Headers["custom-1"]);
+				Wrapper.WebRequest.Headers["custom-1"].ShouldBe("value-1");
 			}
 		}
 	}
@@ -114,7 +129,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 	{
 		protected WebRequestWrapper Wrapper;
 
-		protected given_web_request_wrapper(string uri)
+		protected void SetUp(string uri)
 		{
 			Wrapper = new WebRequestWrapper((HttpWebRequest)WebRequest.Create(new Uri(uri)));
 		}
