@@ -41,7 +41,7 @@ namespace Coderoom.LoadBalancer
 					var proxiedResponseBody = proxiedResponseStreamReader.ReadToEnd();
 
 					var responseBuilder = new StringBuilder();
-					//responseBuilder.AppendLine("HTTP/1.1 200 OK");
+					responseBuilder.AppendLine(proxiedResponse.GetStatusLine());
 					using (var swriter = new StreamWriter(clientStream))
 					{
 						//foreach (var headerKey in proxiedResponse.Headers.AllKeys)
@@ -49,7 +49,7 @@ namespace Coderoom.LoadBalancer
 						//	responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, proxiedResponse.Headers[headerKey]));
 						//}
 
-						//responseBuilder.AppendLine();
+						responseBuilder.AppendLine();
 						responseBuilder.Append(proxiedResponseBody);
 
 						var response = responseBuilder.ToString();
@@ -59,16 +59,16 @@ namespace Coderoom.LoadBalancer
 			}
 		}
 
-		string GetRequestUriFromClientStream(Stream clientStream)
+		static string GetRequestUriFromClientStream(Stream clientStream)
 		{
 			/* Request line format per HTTP specification http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1
 			 * 
 			 *		REQUEST-LINE = Method Request-URI HTTP-Version CRLF
 			 */
 
-			using (var clientSstreamReader = HttpProxyConfiguration.StreamReaderFactory(clientStream, true))
+			using (var clientStreamReader = HttpProxyConfiguration.StreamReaderFactory(clientStream, true))
 			{
-				var requestLine = clientSstreamReader.ReadLine();
+				var requestLine = clientStreamReader.ReadLine();
 				var requestLineFragments = requestLine.Split(' ');
 
 				const int pathFragmentPosition = 1;

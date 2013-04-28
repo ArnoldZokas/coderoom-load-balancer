@@ -13,7 +13,7 @@ namespace Coderoom.LoadBalancer.Abstractions
 
 		public IWebResponse GetResponse()
 		{
-			return new WebResponseWrapper(_webRequest.GetResponse());
+			return new WebResponseWrapper((HttpWebResponse)_webRequest.GetResponse());
 		}
 	}
 

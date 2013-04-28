@@ -33,6 +33,7 @@ namespace Coderoom.LoadBalancer.Specifications
 					webResponseStream = new Mock<Stream>();
 					
 					webResponse.Setup(x => x.GetResponseStream()).Returns(webResponseStream.Object);
+					webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 200 OK");
 					webRequest = new Mock<IWebRequest>();
 					webRequest.Setup(x => x.GetResponse()).Returns(webResponse.Object);
 					HttpProxyConfiguration.StreamReaderFactory = (stream, leaveOpen) => textReader.Object;
@@ -61,7 +62,9 @@ namespace Coderoom.LoadBalancer.Specifications
 					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 				};
 
-			It should_return_response = () => capturedResponse.ShouldContain("<p>content</p>");
+			It should_return_response_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
+
+			It should_return_response_body = () => capturedResponse.ShouldContain("<p>content</p>");
 		}
 	}
 }

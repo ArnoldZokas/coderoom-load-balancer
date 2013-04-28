@@ -19,7 +19,6 @@ namespace Coderoom.LoadBalancer.Abstractions
 			_client.Close();
 		}
 
-		[ExcludeFromCodeCoverage]
 		public Stream GetStream()
 		{
 			return _client.GetStream();
