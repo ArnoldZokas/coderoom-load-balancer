@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,6 +14,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 			readonly ManualResetEvent _event;
 			readonly PortListener _listener;
 			readonly TcpClient _tcpClient;
+			Stream _clientStream;
 			bool _eventRaised;
 
 			public when_port_listener_receives_connection()
@@ -24,13 +26,16 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 				_listener.ConnectionEstablished += (sender, args) =>
 					{
 						_eventRaised = true;
-						_event.Set();
+						_clientStream = args.Client.GetStream();
 						args.Client.Dispose();
+						_event.Set();
 					};
-				_listener.Start();
 
 				_tcpClient = new TcpClient();
-				_tcpClient.Connect(endPoint);
+				_listener.Started += (sender, args) => _tcpClient.Connect(endPoint);
+				_listener.Start();
+
+				WaitHandle.WaitAll(new WaitHandle[] { _event });
 			}
 
 			public void Dispose()
@@ -42,8 +47,13 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 			[Fact]
 			public void it_raises_connection_established_event()
 			{
-				WaitHandle.WaitAll(new[] {_event});
 				Assert.True(_eventRaised);
+			}
+
+			[Fact]
+			public void it_raises_returns_client_stream()
+			{
+				Assert.NotNull(_clientStream);
 			}
 		}
 	}

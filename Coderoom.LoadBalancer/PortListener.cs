@@ -10,6 +10,7 @@ namespace Coderoom.LoadBalancer
 	{
 		readonly IPEndPoint _endPoint;
 		readonly Thread _listenerThread;
+		TcpListener _listener;
 		bool _stopRequested;
 
 		public PortListener(IPEndPoint endPoint)
@@ -20,30 +21,38 @@ namespace Coderoom.LoadBalancer
 
 		public void Start()
 		{
+			_listener = new TcpListener(_endPoint);
+			_listener.Start();
 			_listenerThread.Start();
+			OnStarted(EventArgs.Empty);
 		}
 
+		public event EventHandler<EventArgs> Started;
 		public event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
 
 		public void Stop()
 		{
 			_stopRequested = true;
 			_listenerThread.Abort();
+			_listener.Stop();
 		}
 
 		void ListenForConnections()
 		{
-			var listener = new TcpListener(_endPoint);
-			listener.Start();
-
 			while (_stopRequested == false)
 			{
-				if (!listener.Pending())
+				if (!_listener.Pending())
 					continue;
 
-				var tcpClient = listener.AcceptTcpClient();
+				var tcpClient = _listener.AcceptTcpClient();
 				OnConnectionEstablished(new ConnectionEstablishedEventArgs(new TcpClientWrapper(tcpClient)));
 			}
+		}
+
+		protected virtual void OnStarted(EventArgs e)
+		{
+			if (Started != null)
+				Started(this, e);
 		}
 
 		protected virtual void OnConnectionEstablished(ConnectionEstablishedEventArgs e)
