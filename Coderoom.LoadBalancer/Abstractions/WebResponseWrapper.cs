@@ -24,6 +24,11 @@ namespace Coderoom.LoadBalancer.Abstractions
 			return "HTTP/{0}.{1} {2} {3}".Fmt(_webResponse.ProtocolVersion.Major, _webResponse.ProtocolVersion.Minor, (int)_webResponse.StatusCode, _webResponse.StatusDescription);
 		}
 
+		public WebHeaderCollection GetHeaders()
+		{
+			return _webResponse.Headers;
+		}
+
 		public void Dispose()
 		{
 			_webResponse.Dispose();
@@ -34,5 +39,6 @@ namespace Coderoom.LoadBalancer.Abstractions
 	{
 		Stream GetResponseStream();
 		string GetStatusLine();
+		WebHeaderCollection GetHeaders();
 	}
 }

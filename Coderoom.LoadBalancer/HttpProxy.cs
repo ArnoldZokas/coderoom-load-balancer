@@ -44,10 +44,11 @@ namespace Coderoom.LoadBalancer
 					responseBuilder.AppendLine(proxiedResponse.GetStatusLine());
 					using (var swriter = new StreamWriter(clientStream))
 					{
-						//foreach (var headerKey in proxiedResponse.Headers.AllKeys)
-						//{
-						//	responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, proxiedResponse.Headers[headerKey]));
-						//}
+						var responseHeaders = proxiedResponse.GetHeaders();
+						foreach (var headerKey in responseHeaders.AllKeys)
+						{
+							responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, responseHeaders[headerKey]));
+						}
 
 						responseBuilder.AppendLine();
 						responseBuilder.Append(proxiedResponseBody);

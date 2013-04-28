@@ -14,7 +14,7 @@ namespace Coderoom.LoadBalancer.Abstractions
 		public IWebResponse GetResponse()
 		{
 			WebResponse webResponse;
-			
+
 			try
 			{
 				webResponse = _webRequest.GetResponse();
@@ -23,7 +23,7 @@ namespace Coderoom.LoadBalancer.Abstractions
 			{
 				webResponse = wex.Response;
 			}
-			
+
 			return new WebResponseWrapper((HttpWebResponse)webResponse);
 		}
 	}

@@ -11,22 +11,6 @@ namespace Coderoom.LoadBalancer.Specifications
 {
 	public class HttpProxySpecs
 	{
-		public class when_a_missing_resource_is_requested : given_an_http_proxy
-		{
-			Establish context = () => webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 404 Not Found");
-
-			Because of = () =>
-				{
-					httpProxy.Start();
-
-					textReader.Setup(x => x.ReadLine()).Returns("GET / HTTP/1.1");
-
-					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
-				};
-
-			It should_return_response_404_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 404 Not Found");
-		}
-
 		public class when_a_resource_is_requested : given_an_http_proxy
 		{
 			Establish context = () => webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 200 OK");
@@ -35,14 +19,36 @@ namespace Coderoom.LoadBalancer.Specifications
 				{
 					httpProxy.Start();
 
+					var webHeaderCollection = new WebHeaderCollection();
+					webHeaderCollection.Add("header-1", "value 1");
+					webHeaderCollection.Add("header-2", "value 2");
+					webResponse.Setup(x => x.GetHeaders()).Returns(() => webHeaderCollection);
+
 					textReader.Setup(x => x.ReadLine()).Returns("GET / HTTP/1.1");
 					textReader.Setup(x => x.ReadToEnd()).Returns("<p>content</p>");
 
 					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 				};
 
-			It should_return_response_body = () => capturedResponse.ShouldContain("<p>content</p>");
-			It should_return_response_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
+			It should_return_200status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
+			It should_return_http_headers = () => capturedResponse.ShouldContain("header-1: value 1\r\nheader-2: value 2");
+			It should_return_body = () => capturedResponse.ShouldContain("<p>content</p>");
+		}
+
+		public class when_a_missing_resource_is_requested : given_an_http_proxy
+		{
+			Establish context = () => webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 404 Not Found");
+
+			Because of = () =>
+			{
+				httpProxy.Start();
+
+				textReader.Setup(x => x.ReadLine()).Returns("GET / HTTP/1.1");
+
+				portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
+			};
+
+			It should_return_404_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 404 Not Found");
 		}
 	}
 
