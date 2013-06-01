@@ -22,14 +22,14 @@ namespace Coderoom.LoadBalancer.Service
 
 			try
 			{
-				var endPoint = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 80);
 				var contentServers = new List<IPEndPoint>
 					{
 						new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8081),
 						new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8082)
 					};
-
+				var endPoint = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 80);
 				var portListener = new PortListener(endPoint);
+
 				_httpProxy = new HttpProxy(contentServers, portListener);
 				_httpProxy.Start();
 			}
