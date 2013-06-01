@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net;
 
 namespace Coderoom.LoadBalancer
@@ -25,10 +26,17 @@ namespace Coderoom.LoadBalancer
 			foreach (var contentServer in contentServers)
 				Console.WriteLine("        * {0}:{1}", contentServer.Address, contentServer.Port);
 
-			var portListener = new PortListener(endPoint);
-			var httpProxy = new HttpProxy(contentServers, portListener);
-			httpProxy.Start();
-			portListener.ConnectionEstablished += (sender, args) => Console.WriteLine("Connection established");
+			try
+			{
+				var portListener = new PortListener(endPoint);
+				var httpProxy = new HttpProxy(contentServers, portListener);
+				httpProxy.Start();
+				portListener.ConnectionEstablished += (sender, args) => Console.WriteLine("Connection established");
+			}
+			catch (Exception ex)
+			{
+				File.WriteAllText("C:\\Deployment\\log.txt", ex.Message + " || " + ex.StackTrace);
+			}
 
 			Console.WriteLine();
 			Console.WriteLine("Load Balancer started...");
