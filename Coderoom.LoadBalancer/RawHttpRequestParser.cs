@@ -6,7 +6,7 @@ namespace Coderoom.LoadBalancer
 {
 	public class RawHttpRequestParser : IRawHttpRequestParser
 	{
-		public RawHttpRequestParserResult ParseFromClientStream(Stream clientStream)
+		public RawHttpRequestParserResult ParseHttpRequestFromClientStream(Stream clientStream)
 		{
 			var result = new RawHttpRequestParserResult();
 
@@ -43,6 +43,6 @@ namespace Coderoom.LoadBalancer
 
 	public interface IRawHttpRequestParser
 	{
-		RawHttpRequestParserResult ParseFromClientStream(Stream clientStream);
+		RawHttpRequestParserResult ParseHttpRequestFromClientStream(Stream clientStream);
 	}
 }

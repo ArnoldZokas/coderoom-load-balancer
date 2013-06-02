@@ -36,7 +36,7 @@ namespace Coderoom.LoadBalancer
 
 			using (var clientStream = connectionEstablishedEventArgs.Client.GetStream())
 			{
-				var requestParserResult = HttpProxyConfiguration.RawHttpRequestParser.ParseFromClientStream(clientStream);
+				var requestParserResult = HttpProxyConfiguration.RawHttpRequestParser.ParseHttpRequestFromClientStream(clientStream);
 				var requestUri = BuildRequestUri(selectedServer, requestParserResult.RequestUri);
 				var proxiedRequest = HttpProxyConfiguration.WebRequestFactory(requestUri);
 				proxiedRequest.AddHeaders(requestParserResult.RequestHeaders);
