@@ -32,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="System" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
@@ -45,6 +46,7 @@
     <Compile Include="Host.Designer.cs">
       <DependentUpon>Host.cs</DependentUpon>
     </Compile>
+    <Compile Include="Infrastructure\Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -52,10 +54,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Coderoom.LoadBalancer.Diagnostics\Coderoom.LoadBalancer.Diagnostics.csproj">
-      <Project>{F6B9CDA6-636C-486E-902D-97DAD213B96F}</Project>
-      <Name>Coderoom.LoadBalancer.Diagnostics</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Coderoom.LoadBalancer\Coderoom.LoadBalancer.csproj">
       <Project>{0E67B839-B0F5-4866-B612-EA9B0A4428A0}</Project>
       <Name>Coderoom.LoadBalancer</Name>

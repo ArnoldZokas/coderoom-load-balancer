@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.ServiceProcess;
-using Coderoom.LoadBalancer.Diagnostics.Logging;
+using Coderoom.LoadBalancer.Service.Infrastructure;
 
 namespace Coderoom.LoadBalancer.Service
 {

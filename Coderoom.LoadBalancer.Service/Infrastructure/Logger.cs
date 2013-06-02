@@ -1,13 +1,11 @@
 ﻿using System;
-using System.IO;
 
-namespace Coderoom.LoadBalancer.Diagnostics.Logging
+namespace Coderoom.LoadBalancer.Service.Infrastructure
 {
 	public class Logger : ILogger
 	{
 		public void LogException(Exception exception)
 		{
-			File.WriteAllText("C:\\Deployment\\log.txt", exception.Message + " || " + exception.StackTrace);
 		}
 	}
 
