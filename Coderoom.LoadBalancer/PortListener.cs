@@ -27,8 +27,6 @@ namespace Coderoom.LoadBalancer
 			OnStarted(EventArgs.Empty);
 		}
 
-		public event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
-
 		public void Stop()
 		{
 			_stopRequested = true;
@@ -37,6 +35,20 @@ namespace Coderoom.LoadBalancer
 		}
 
 		public event EventHandler<EventArgs> Started;
+
+		protected virtual void OnStarted(EventArgs e)
+		{
+			if (Started != null)
+				Started(this, e);
+		}
+
+		public event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
+
+		protected virtual void OnConnectionEstablished(ConnectionEstablishedEventArgs e)
+		{
+			if (ConnectionEstablished != null)
+				ConnectionEstablished(this, e);
+		}
 
 		void ListenForConnections()
 		{
@@ -48,18 +60,6 @@ namespace Coderoom.LoadBalancer
 				var tcpClient = _listener.AcceptTcpClient();
 				OnConnectionEstablished(new ConnectionEstablishedEventArgs(new TcpClientWrapper(tcpClient)));
 			}
-		}
-
-		protected virtual void OnStarted(EventArgs e)
-		{
-			if (Started != null)
-				Started(this, e);
-		}
-
-		protected virtual void OnConnectionEstablished(ConnectionEstablishedEventArgs e)
-		{
-			if (ConnectionEstablished != null)
-				ConnectionEstablished(this, e);
 		}
 	}
 

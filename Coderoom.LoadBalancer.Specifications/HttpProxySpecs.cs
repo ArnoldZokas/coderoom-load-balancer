@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Coderoom.LoadBalancer.Abstractions;
 using Coderoom.LoadBalancer.Specifications.Utilities;
 using Machine.Specifications;
@@ -14,15 +19,17 @@ namespace Coderoom.LoadBalancer.Specifications
 	{
 		public class when_a_resource_is_requested : given_an_http_proxy
 		{
-			Establish context = () => webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 200 OK");
-
-			Because of = () =>
+			Establish context = () =>
 				{
-					webResponse.MockHttpHeaders(new WebHeaderCollection
+					proxiedResponseMessage = new HttpResponseMessage
 						{
-							{"header-1", "value 1"},
-							{"header-2", "value 2"}
-						});
+							Version = new Version(1, 1),
+							StatusCode = HttpStatusCode.OK,
+							ReasonPhrase = HttpStatusCode.OK.ToString(),
+							Content = new StringContent("<p>content</p>")
+						};
+					proxiedResponseMessage.Headers.Add("header-1", "value 1");
+					proxiedResponseMessage.Headers.Add("header-2", "value 2");
 
 					textReader.MockRawRequestContent(new[]
 						{
@@ -30,13 +37,19 @@ namespace Coderoom.LoadBalancer.Specifications
 							"header-1: value 1",
 							"header-2: value 2"
 						});
-
-					textReader.Setup(x => x.ReadToEnd()).Returns("<p>content</p>");
-
-					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 				};
 
-			It should_transmit_http_headers = () => webRequest.Verify(x => x.AddHeaders(Moq.It.Is<WebHeaderCollection>(headers => headers.Count == 2)));
+			Because of = () =>
+				{
+					var waitHandle = new AutoResetEvent(false);
+					httpProxy.RequestProcessed += (sender, args) => waitHandle.Set();
+					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
+					waitHandle.WaitOne();
+				};
+
+			It should_make_get_request = () => httpClient.Verify(x => x.SendAsync(Moq.It.Is<HttpRequestMessage>(m => m.Method == HttpMethod.Get)));
+			It should_make_request_to_root = () => httpClient.Verify(x => x.SendAsync(Moq.It.Is<HttpRequestMessage>(m => m.RequestUri.AbsolutePath == "/")));
+			It should_transmit_http_headers = () => httpClient.Verify(x => x.SendAsync(Moq.It.Is<HttpRequestMessage>(m => m.Headers.Count() == 2)));
 			It should_return_200_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
 			It should_return_http_headers = () => capturedResponse.ShouldContain("header-1: value 1\r\nheader-2: value 2");
 			It should_return_body = () => capturedResponse.ShouldContain("<p>content</p>");
@@ -44,17 +57,23 @@ namespace Coderoom.LoadBalancer.Specifications
 
 		public class when_a_missing_resource_is_requested : given_an_http_proxy
 		{
-			Establish context = () => webResponse.Setup(x => x.GetStatusLine()).Returns("HTTP/1.1 404 Not Found");
-
-			Because of = () =>
+			Establish context = delegate
 				{
+					proxiedResponseMessage = new HttpResponseMessage
+						{
+							Version = new Version(1, 1),
+							StatusCode = HttpStatusCode.NotFound,
+							ReasonPhrase = "Not Found",
+							Content = new StringContent(string.Empty)
+						};
+
 					textReader.MockRawRequestContent(new[]
 						{
 							"GET / HTTP/1.1"
 						});
-
-					portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 				};
+
+			Because of = () => portListener.Raise(x => x.ConnectionEstablished += null, new ConnectionEstablishedEventArgs(tcpClientWrapper.Object));
 
 			It should_return_404_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 404 Not Found");
 		}
@@ -75,8 +94,8 @@ namespace Coderoom.LoadBalancer.Specifications
 		protected static Mock<Stream> tcpClientStream;
 		protected static string capturedResponse;
 		protected static Mock<TextReader> textReader;
-		protected static Mock<IWebRequest> webRequest;
-		protected static Mock<IWebResponse> webResponse;
+		protected static Mock<IHttpClientWrapper> httpClient;
+		protected static HttpResponseMessage proxiedResponseMessage;
 		protected static Mock<Stream> webResponseStream;
 
 		Establish context = () =>
@@ -84,16 +103,13 @@ namespace Coderoom.LoadBalancer.Specifications
 				var ipEndPoints = new List<IPEndPoint> {new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8081)};
 				portListener = new Mock<IPortListener>();
 				textReader = new Mock<TextReader>();
-				webResponse = new Mock<IWebResponse>();
 				webResponseStream = new Mock<Stream>();
 
-				webResponse.Setup(x => x.GetResponseStream()).Returns(webResponseStream.Object);
-				webResponse.Setup(x => x.GetHeaders()).Returns(() => new WebHeaderCollection());
-				webRequest = new Mock<IWebRequest>();
-				webRequest.Setup(x => x.GetResponse()).Returns(webResponse.Object);
+				httpClient = new Mock<IHttpClientWrapper>();
+				httpClient.Setup(x => x.SendAsync(Moq.It.IsAny<HttpRequestMessage>())).Returns(new Task<HttpResponseMessage>(() => proxiedResponseMessage));
 
 				HttpProxyConfiguration.StreamReaderFactory = (stream, leaveOpen) => textReader.Object;
-				HttpProxyConfiguration.WebRequestFactory = uri => webRequest.Object;
+				HttpProxyConfiguration.HttpClientFactory = () => httpClient.Object;
 
 				tcpClientStream = new Mock<Stream>();
 				tcpClientStream

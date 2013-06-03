@@ -4,7 +4,7 @@ using System.Net;
 
 namespace Coderoom.LoadBalancer
 {
-	public class RawHttpRequestParser : IRawHttpRequestParser
+	public class ClientStreamParser : IRawHttpRequestParser
 	{
 		public RawHttpRequestParserResult ParseHttpRequestFromClientStream(Stream clientStream)
 		{

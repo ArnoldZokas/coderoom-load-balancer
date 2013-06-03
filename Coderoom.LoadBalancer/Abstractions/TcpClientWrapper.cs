@@ -13,14 +13,14 @@ namespace Coderoom.LoadBalancer.Abstractions
 			_client = client;
 		}
 
-		public void Dispose()
-		{
-			_client.Close();
-		}
-
 		public Stream GetStream()
 		{
 			return _client.GetStream();
+		}
+
+		public void Dispose()
+		{
+			_client.Close();
 		}
 	}
 

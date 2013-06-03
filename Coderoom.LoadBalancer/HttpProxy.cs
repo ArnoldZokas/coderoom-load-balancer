@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using Coderoom.LoadBalancer.Utilities;
 
 namespace Coderoom.LoadBalancer
 {
@@ -30,7 +32,15 @@ namespace Coderoom.LoadBalancer
 			_listener.Stop();
 		}
 
-		void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
+		public event EventHandler<EventArgs> RequestProcessed;
+
+		protected virtual void OnRequestProcessed(EventArgs e)
+		{
+			if (RequestProcessed != null)
+				RequestProcessed(this, e);
+		}
+
+		async void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
 		{
 			var selectedServer = _servers.First();
 
@@ -38,33 +48,49 @@ namespace Coderoom.LoadBalancer
 			{
 				var requestParserResult = HttpProxyConfiguration.RawHttpRequestParser.ParseHttpRequestFromClientStream(clientStream);
 				var requestUri = BuildRequestUri(selectedServer, requestParserResult.RequestUri);
-				var proxiedRequest = HttpProxyConfiguration.WebRequestFactory(requestUri);
-				proxiedRequest.AddHeaders(requestParserResult.RequestHeaders);
 
-				using (var proxiedResponse = proxiedRequest.GetResponse())
-				using (var proxiedResponseStream = proxiedResponse.GetResponseStream())
-				using (var proxiedResponseStreamReader = HttpProxyConfiguration.StreamReaderFactory(proxiedResponseStream, false))
+				using (var client = HttpProxyConfiguration.HttpClientFactory())
 				{
-					var proxiedResponseBody = proxiedResponseStreamReader.ReadToEnd();
+					var httpRequestMessage = new HttpRequestMessage();
+					httpRequestMessage.RequestUri = requestUri;
+					httpRequestMessage.Content = new StringContent(string.Empty);
+					var h = requestParserResult.RequestHeaders;
+					foreach (var name in h.AllKeys)
+					{
+						httpRequestMessage.Headers.Add(name, h.Get(name));
+					}
+					
+					//var x = await client.SendAsync(httpRequestMessage);
+					var task = client.SendAsync(httpRequestMessage);
+					task.Start();
+					task.Wait();
+					var x = task.Result;
+					httpRequestMessage.Dispose();
 
 					var responseBuilder = new StringBuilder();
-					responseBuilder.AppendLine(proxiedResponse.GetStatusLine());
+					responseBuilder.AppendLine("HTTP/{0}.{1} {2} {3}".Fmt(x.Version.Major, x.Version.Minor, (int)x.StatusCode, x.ReasonPhrase));
 					using (var swriter = new StreamWriter(clientStream))
 					{
-						var responseHeaders = proxiedResponse.GetHeaders();
-						foreach (var headerKey in responseHeaders.AllKeys)
+						var responseHeaders = x.Headers;
+						foreach (var header in responseHeaders)
 						{
-							responseBuilder.AppendLine(string.Format("{0}: {1}", headerKey, responseHeaders[headerKey]));
+							responseBuilder.AppendLine(string.Format("{0}: {1}", header.Key, header.Value.First()));
 						}
 
-						responseBuilder.AppendLine();
-						responseBuilder.Append(proxiedResponseBody);
-
-						var response = responseBuilder.ToString();
+						var content = x.Content.ReadAsStringAsync().Result;
+						if (content != string.Empty)
+						{
+							responseBuilder.AppendLine("\n");
+							responseBuilder.Append(content);
+						}
+						
+						var response = responseBuilder.ToString().TrimEnd('\n');
 						swriter.Write(response);
 					}
+					x.Dispose();
 				}
 			}
+			OnRequestProcessed(EventArgs.Empty);
 		}
 
 		static Uri BuildRequestUri(IPEndPoint endpoint, string relativeRequestUri)
