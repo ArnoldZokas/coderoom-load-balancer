@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace Coderoom.LoadBalancer.Request
 {
-	public class RequestBuilder : IRequestBuilder
+	public class RequestMessageBuilder : IRequestMessageBuilder
 	{
 		public HttpRequestMessage BuildRequestFromRequestStream(IPEndPoint endPoint, Stream stream)
 		{
@@ -15,8 +15,7 @@ namespace Coderoom.LoadBalancer.Request
 			{
 				httpRequestMessage.RequestUri = BuildAbsoluteRequestUri(endPoint, clientStreamReader.ReadLine());
 				CopyHeaders(httpRequestMessage, clientStreamReader);
-				httpRequestMessage.Content = CopyContent();
-				
+
 				return httpRequestMessage;
 			}
 		}
@@ -28,9 +27,9 @@ namespace Coderoom.LoadBalancer.Request
 			 *		REQUEST-LINE = Method Request-URI HTTP-Version CRLF
 			 */
 
-			var absoluteUri = new Uri(string.Format("{0}{1}{2}", Uri.UriSchemeHttp, Uri.SchemeDelimiter, endPoint), UriKind.Absolute);
+			var baseUri = new Uri(string.Format("{0}{1}{2}", Uri.UriSchemeHttp, Uri.SchemeDelimiter, endPoint), UriKind.Absolute);
 			var relativeUri = line.Split(' ')[1];
-			return new Uri(absoluteUri, relativeUri);
+			return new Uri(baseUri, relativeUri);
 		}
 
 		static void CopyHeaders(HttpRequestMessage httpRequestMessage, TextReader clientStreamReader)
@@ -40,17 +39,13 @@ namespace Coderoom.LoadBalancer.Request
 			{
 				var key = line.Substring(0, line.IndexOf(":", StringComparison.OrdinalIgnoreCase));
 				var value = line.Substring(key.Length + 2, line.Length - key.Length - 2);
+
 				httpRequestMessage.Headers.Add(key, value);
 			}
 		}
-
-		static StringContent CopyContent()
-		{
-			return new StringContent(string.Empty);
-		}
 	}
 
-	public interface IRequestBuilder
+	public interface IRequestMessageBuilder
 	{
 		HttpRequestMessage BuildRequestFromRequestStream(IPEndPoint endPoint, Stream stream);
 	}

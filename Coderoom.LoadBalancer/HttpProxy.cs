@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Net.Http;
 using Coderoom.LoadBalancer.Request;
-using Coderoom.LoadBalancer.Utilities;
+using Coderoom.LoadBalancer.Response;
 
 namespace Coderoom.LoadBalancer
 {
@@ -13,13 +11,15 @@ namespace Coderoom.LoadBalancer
 	{
 		readonly IEnumerable<IPEndPoint> _servers;
 		readonly IPortListener _listener;
-		readonly IRequestBuilder _requestBuilder;
+		readonly IRequestMessageBuilder _requestMessageBuilder;
+		readonly IResponseStreamWriter _responseStreamWriter;
 
-		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener, IRequestBuilder requestBuilder)
+		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener, IRequestMessageBuilder requestMessageBuilder, IResponseStreamWriter responseStreamWriter)
 		{
 			_servers = servers;
 			_listener = listener;
-			_requestBuilder = requestBuilder;
+			_requestMessageBuilder = requestMessageBuilder;
+			_responseStreamWriter = responseStreamWriter;
 		}
 
 		public void Start()
@@ -34,52 +34,30 @@ namespace Coderoom.LoadBalancer
 			_listener.Stop();
 		}
 
-		public event EventHandler<EventArgs> RequestProcessed;
-
-		protected virtual void OnRequestProcessed(EventArgs e)
-		{
-			if (RequestProcessed != null)
-				RequestProcessed(this, e);
-		}
-
-		async void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
+		void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
 		{
 			// TODO: Abstract server selection
 			var selectedServer = _servers.First();
 
 			using (var clientStream = connectionEstablishedEventArgs.Client.GetStream())
 			using (var client = HttpProxyConfiguration.HttpClientFactory())
-			using (var requestMessage = _requestBuilder.BuildRequestFromRequestStream(selectedServer, clientStream))
+			using (var requestMessage = _requestMessageBuilder.BuildRequestFromRequestStream(selectedServer, clientStream))
 			{
-				var sendAsyncTask = client.SendAsync(requestMessage);
-				sendAsyncTask.Start();
-				sendAsyncTask.Wait();
-
-				using (var responseMessage = sendAsyncTask.Result)
+				if (requestMessage == null)
 				{
-					var responseBuilder = new StringBuilder();
-					responseBuilder.AppendLine("HTTP/{0}.{1} {2} {3}".Fmt(responseMessage.Version.Major, responseMessage.Version.Minor, (int)responseMessage.StatusCode, responseMessage.ReasonPhrase));
-					using (var swriter = new StreamWriter(clientStream))
-					{
-						var responseHeaders = responseMessage.Headers;
-						foreach (var header in responseHeaders)
+					var responseMessage = new HttpResponseMessage
 						{
-							responseBuilder.AppendLine(string.Format("{0}: {1}", header.Key, header.Value.First()));
-						}
-
-						var content = responseMessage.Content.ReadAsStringAsync().Result;
-						if (content != string.Empty)
-						{
-							responseBuilder.AppendLine("\n");
-							responseBuilder.Append(content);
-						}
-
-						var response = responseBuilder.ToString().TrimEnd('\n');
-						swriter.Write(response);
-					}
+							StatusCode = HttpStatusCode.NotFound
+						};
+					_responseStreamWriter.WriteHttpResponseToClientStream(responseMessage, clientStream);
+				}
+				else
+				{
+					var responseMessage = client.SendAsync(requestMessage).Result;
+					using (responseMessage)
+						_responseStreamWriter.WriteHttpResponseToClientStream(responseMessage, clientStream);
 				}
 			}
-			OnRequestProcessed(EventArgs.Empty);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Coderoom.LoadBalancer.Request;
+using Coderoom.LoadBalancer.Response;
 
 namespace Coderoom.LoadBalancer
 {
@@ -13,12 +14,12 @@ namespace Coderoom.LoadBalancer
 		{
 			try
 			{
-				var endPoint = new IPEndPoint(new IPAddress(new byte[] { 127, 0, 0, 1 }), 81);
+				var endPoint = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 81);
 				var contentServers = new List<IPEndPoint>
-				{
-					new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8081),
-					new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8082)
-				};
+					{
+						new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8081),
+						new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 8082)
+					};
 
 				Console.WriteLine("SIMPLE LOAD BALANCER");
 				Console.WriteLine("====================");
@@ -29,14 +30,13 @@ namespace Coderoom.LoadBalancer
 					Console.WriteLine("        * {0}:{1}", contentServer.Address, contentServer.Port);
 
 				var portListener = new PortListener(endPoint);
-				var httpProxy = new HttpProxy(contentServers, portListener, new RequestBuilder());
+				var httpProxy = new HttpProxy(contentServers, portListener, new RequestMessageBuilder(), new ResponseStreamWriter());
 				httpProxy.Start();
 				portListener.ConnectionEstablished += (sender, args) => Console.WriteLine("Connection established");
 
 				Console.WriteLine();
 				Console.WriteLine("Load Balancer started...");
 				Console.WriteLine();
-
 			}
 			catch (Exception ex)
 			{

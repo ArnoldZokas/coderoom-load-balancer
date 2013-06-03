@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.ServiceProcess;
 using Coderoom.LoadBalancer.Request;
+using Coderoom.LoadBalancer.Response;
 using Coderoom.LoadBalancer.Service.Infrastructure;
 
 namespace Coderoom.LoadBalancer.Service
@@ -31,7 +32,7 @@ namespace Coderoom.LoadBalancer.Service
 				var endPoint = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 80);
 				var portListener = new PortListener(endPoint);
 
-				_httpProxy = new HttpProxy(contentServers, portListener, new RequestBuilder());
+				_httpProxy = new HttpProxy(contentServers, portListener, new RequestMessageBuilder(), new ResponseStreamWriter());
 				_httpProxy.Start();
 			}
 			catch (Exception ex)

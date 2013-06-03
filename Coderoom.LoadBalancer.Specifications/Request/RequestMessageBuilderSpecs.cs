@@ -11,9 +11,9 @@ using It = Machine.Specifications.It;
 
 namespace Coderoom.LoadBalancer.Specifications.Request
 {
-	public class RequestBuilderSpecs
+	public class RequestMessageBuilderSpecs
 	{
-		public class when_request_message_is_built_from_stream : given_a_request_builder
+		public class when_request_message_is_built_from_stream : given_a_request_message_builder
 		{
 			static IPEndPoint ipEndPoint;
 			static Mock<MemoryStream> memoryStream;
@@ -34,7 +34,7 @@ namespace Coderoom.LoadBalancer.Specifications.Request
 					HttpProxyConfiguration.StreamReaderFactory = (stream, leaveOpen) => textReader.Object;
 				};
 
-			Because of = () => requestMessage = requestBuilder.BuildRequestFromRequestStream(ipEndPoint, memoryStream.Object);
+			Because of = () => requestMessage = requestMessageBuilder.BuildRequestFromRequestStream(ipEndPoint, memoryStream.Object);
 
 			Cleanup after = () => HttpProxyConfiguration.ResetToDefault();
 
@@ -46,10 +46,10 @@ namespace Coderoom.LoadBalancer.Specifications.Request
 		}
 	}
 
-	public class given_a_request_builder
+	public class given_a_request_message_builder
 	{
-		protected static IRequestBuilder requestBuilder;
+		protected static IRequestMessageBuilder requestMessageBuilder;
 
-		Establish context = () => requestBuilder = new RequestBuilder();
+		Establish context = () => requestMessageBuilder = new RequestMessageBuilder();
 	}
 }
