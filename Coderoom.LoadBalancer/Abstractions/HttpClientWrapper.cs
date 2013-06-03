@@ -13,11 +13,6 @@ namespace Coderoom.LoadBalancer.Abstractions
 			_httpClient = httpClient;
 		}
 
-		public HttpClient HttpClient
-		{
-			get { return _httpClient; }
-		}
-
 		public Task<HttpResponseMessage> SendAsync(HttpRequestMessage httpRequestMessage)
 		{
 			return _httpClient.SendAsync(httpRequestMessage);
@@ -31,7 +26,6 @@ namespace Coderoom.LoadBalancer.Abstractions
 
 	public interface IHttpClientWrapper : IDisposable
 	{
-		HttpClient HttpClient { get; }
 		Task<HttpResponseMessage> SendAsync(HttpRequestMessage httpRequestMessage);
 	}
 }

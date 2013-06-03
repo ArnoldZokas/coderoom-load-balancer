@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
+using Coderoom.LoadBalancer.Request;
 using Coderoom.LoadBalancer.Utilities;
 
 namespace Coderoom.LoadBalancer
 {
 	public class HttpProxy
 	{
-		readonly IPortListener _listener;
 		readonly IEnumerable<IPEndPoint> _servers;
+		readonly IPortListener _listener;
+		readonly IRequestBuilder _requestBuilder;
 
-		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener)
+		public HttpProxy(IEnumerable<IPEndPoint> servers, IPortListener listener, IRequestBuilder requestBuilder)
 		{
-			_listener = listener;
 			_servers = servers;
+			_listener = listener;
+			_requestBuilder = requestBuilder;
 		}
 
 		public void Start()
@@ -42,60 +44,42 @@ namespace Coderoom.LoadBalancer
 
 		async void ListenerOnConnectionEstablished(object sender, ConnectionEstablishedEventArgs connectionEstablishedEventArgs)
 		{
+			// TODO: Abstract server selection
 			var selectedServer = _servers.First();
 
 			using (var clientStream = connectionEstablishedEventArgs.Client.GetStream())
+			using (var client = HttpProxyConfiguration.HttpClientFactory())
+			using (var requestMessage = _requestBuilder.BuildRequestFromRequestStream(selectedServer, clientStream))
 			{
-				var requestParserResult = HttpProxyConfiguration.RawHttpRequestParser.ParseHttpRequestFromClientStream(clientStream);
-				var requestUri = BuildRequestUri(selectedServer, requestParserResult.RequestUri);
+				var sendAsyncTask = client.SendAsync(requestMessage);
+				sendAsyncTask.Start();
+				sendAsyncTask.Wait();
 
-				using (var client = HttpProxyConfiguration.HttpClientFactory())
+				using (var responseMessage = sendAsyncTask.Result)
 				{
-					var httpRequestMessage = new HttpRequestMessage();
-					httpRequestMessage.RequestUri = requestUri;
-					httpRequestMessage.Content = new StringContent(string.Empty);
-					var h = requestParserResult.RequestHeaders;
-					foreach (var name in h.AllKeys)
-					{
-						httpRequestMessage.Headers.Add(name, h.Get(name));
-					}
-					
-					//var x = await client.SendAsync(httpRequestMessage);
-					var task = client.SendAsync(httpRequestMessage);
-					task.Start();
-					task.Wait();
-					var x = task.Result;
-					httpRequestMessage.Dispose();
-
 					var responseBuilder = new StringBuilder();
-					responseBuilder.AppendLine("HTTP/{0}.{1} {2} {3}".Fmt(x.Version.Major, x.Version.Minor, (int)x.StatusCode, x.ReasonPhrase));
+					responseBuilder.AppendLine("HTTP/{0}.{1} {2} {3}".Fmt(responseMessage.Version.Major, responseMessage.Version.Minor, (int)responseMessage.StatusCode, responseMessage.ReasonPhrase));
 					using (var swriter = new StreamWriter(clientStream))
 					{
-						var responseHeaders = x.Headers;
+						var responseHeaders = responseMessage.Headers;
 						foreach (var header in responseHeaders)
 						{
 							responseBuilder.AppendLine(string.Format("{0}: {1}", header.Key, header.Value.First()));
 						}
 
-						var content = x.Content.ReadAsStringAsync().Result;
+						var content = responseMessage.Content.ReadAsStringAsync().Result;
 						if (content != string.Empty)
 						{
 							responseBuilder.AppendLine("\n");
 							responseBuilder.Append(content);
 						}
-						
+
 						var response = responseBuilder.ToString().TrimEnd('\n');
 						swriter.Write(response);
 					}
-					x.Dispose();
 				}
 			}
 			OnRequestProcessed(EventArgs.Empty);
-		}
-
-		static Uri BuildRequestUri(IPEndPoint endpoint, string relativeRequestUri)
-		{
-			return new Uri(string.Format("http://{0}:{1}{2}", endpoint.Address, endpoint.Port, relativeRequestUri));
 		}
 	}
 }

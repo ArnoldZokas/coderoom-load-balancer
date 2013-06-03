@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using Coderoom.LoadBalancer.Request;
 
 namespace Coderoom.LoadBalancer
 {
@@ -28,7 +29,7 @@ namespace Coderoom.LoadBalancer
 					Console.WriteLine("        * {0}:{1}", contentServer.Address, contentServer.Port);
 
 				var portListener = new PortListener(endPoint);
-				var httpProxy = new HttpProxy(contentServers, portListener);
+				var httpProxy = new HttpProxy(contentServers, portListener, new RequestBuilder());
 				httpProxy.Start();
 				portListener.ConnectionEstablished += (sender, args) => Console.WriteLine("Connection established");
 

@@ -17,13 +17,11 @@ namespace Coderoom.LoadBalancer
 
 		public static Func<Stream, bool, TextReader> StreamReaderFactory { get; set; }
 		public static Func<IHttpClientWrapper> HttpClientFactory { get; set; }
-		public static IRawHttpRequestParser RawHttpRequestParser { get; set; }
 
 		public static void ResetToDefault()
 		{
 			StreamReaderFactory = (stream, leaveOpen) => new StreamReader(stream, Encoding.UTF8, true, 1024, leaveOpen);
 			HttpClientFactory = () => new HttpClientWrapper(new HttpClient());
-			RawHttpRequestParser = new ClientStreamParser();
 		}
 	}
 }

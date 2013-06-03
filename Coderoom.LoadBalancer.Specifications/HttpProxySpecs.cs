@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Coderoom.LoadBalancer.Abstractions;
+using Coderoom.LoadBalancer.Request;
 using Coderoom.LoadBalancer.Specifications.Utilities;
 using Machine.Specifications;
 using Moq;
@@ -121,7 +122,7 @@ namespace Coderoom.LoadBalancer.Specifications
 				tcpClientWrapper = new Mock<ITcpClient>();
 				tcpClientWrapper.Setup(x => x.GetStream()).Returns(tcpClientStream.Object);
 
-				httpProxy = new HttpProxy(ipEndPoints, portListener.Object);
+				httpProxy = new HttpProxy(ipEndPoints, portListener.Object, new RequestBuilder());
 				httpProxy.Start();
 			};
 

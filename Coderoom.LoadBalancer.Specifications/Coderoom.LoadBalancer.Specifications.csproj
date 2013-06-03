@@ -41,6 +41,7 @@
     </Compile>
     <Compile Include="HttpProxySpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Request\RequestBuilderSpecs.cs" />
     <Compile Include="Utilities\HttpProxySpecHelper.cs" />
   </ItemGroup>
   <ItemGroup>
