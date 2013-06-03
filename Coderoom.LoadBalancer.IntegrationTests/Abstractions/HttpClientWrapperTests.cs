@@ -28,6 +28,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 			[TearDown]
 			public void TearDown()
 			{
+				Wrapper.Dispose();
 				_response.Dispose();
 			}
 		}
@@ -53,6 +54,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 			[TearDown]
 			public void TearDown()
 			{
+				Wrapper.Dispose();
 				_response.Dispose();
 			}
 		}
@@ -60,9 +62,12 @@ namespace Coderoom.LoadBalancer.IntegrationTests.Abstractions
 
 	public abstract class given_http_client_wrapper
 	{
+		protected HttpClientWrapper Wrapper;
+
 		protected Task<HttpResponseMessage> SendAsync(string uri)
 		{
-			return new HttpClientWrapper(new HttpClient()).SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
+			Wrapper = new HttpClientWrapper(new HttpClient());
+			return Wrapper.SendAsync(new HttpRequestMessage(HttpMethod.Get, uri));
 		}
 	}
 }

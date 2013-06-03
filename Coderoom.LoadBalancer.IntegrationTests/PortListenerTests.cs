@@ -23,7 +23,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 			{
 				_event = new ManualResetEvent(false);
 
-				var endPoint = new IPEndPoint(new IPAddress(new byte[] {127, 0, 0, 1}), 17000);
+				var endPoint = new IPEndPoint(IPAddress.Loopback, 17000);
 				_listener = new PortListener(endPoint);
 				_listener.ConnectionEstablished += (sender, args) =>
 					{
@@ -54,7 +54,7 @@ namespace Coderoom.LoadBalancer.IntegrationTests
 			}
 
 			[Test]
-			public void it_raises_returns_client_stream()
+			public void it_opens_client_stream()
 			{
 				Assert.NotNull(_clientStream);
 			}
