@@ -42,7 +42,7 @@ namespace Coderoom.LoadBalancer.Specifications.Response
 			Cleanup after = () => HttpProxyConfiguration.ResetToDefault();
 
 			It should_write_200_status_line = () => capturedResponse.ShouldContain("HTTP/1.1 200 OK");
-			It should_write_http_headers = () => capturedResponse.ShouldContain("header-1: value 1\r\nheader-2: value 2");
+			It should_write_http_headers = () => capturedResponse.ShouldContain("header-1: value 1\r\nheader-2: value 2\r\nContent-Type: text/plain");
 			It should_write_content = () => capturedResponse.ShouldContain("<p>content</p>");
 		}
 	}

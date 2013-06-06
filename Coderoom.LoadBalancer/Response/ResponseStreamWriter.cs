@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using Coderoom.LoadBalancer.Utilities;
@@ -27,7 +28,7 @@ namespace Coderoom.LoadBalancer.Response
 
 		static void CopyHeaders(HttpResponseMessage responseMessage, StringBuilder responseBuilder)
 		{
-			var responseHeaders = responseMessage.Headers;
+			var responseHeaders = responseMessage.Headers.Union(responseMessage.Content.Headers);
 			foreach (var header in responseHeaders)
 			{
 				foreach (var headerValue in header.Value)
