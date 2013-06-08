@@ -32,7 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="System" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
