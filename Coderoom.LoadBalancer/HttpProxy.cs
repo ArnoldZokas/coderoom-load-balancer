@@ -43,20 +43,9 @@ namespace Coderoom.LoadBalancer
 			using (var client = HttpProxyConfiguration.HttpClientFactory())
 			using (var requestMessage = _requestMessageBuilder.BuildRequestFromRequestStream(selectedServer, clientStream))
 			{
-				if (requestMessage == null)
-				{
-					var responseMessage = new HttpResponseMessage
-						{
-							StatusCode = HttpStatusCode.NotFound
-						};
+				var responseMessage = client.SendAsync(requestMessage).Result;
+				using (responseMessage)
 					_responseStreamWriter.WriteHttpResponseToClientStream(responseMessage, clientStream);
-				}
-				else
-				{
-					var responseMessage = client.SendAsync(requestMessage).Result;
-					using (responseMessage)
-						_responseStreamWriter.WriteHttpResponseToClientStream(responseMessage, clientStream);
-				}
 			}
 		}
 	}

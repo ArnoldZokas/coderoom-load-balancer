@@ -41,8 +41,6 @@ namespace Coderoom.LoadBalancer.Response
 		static void CopyContent(HttpResponseMessage responseMessage, StringBuilder responseBuilder)
 		{
 			var content = responseMessage.Content.ReadAsStringAsync().Result;
-			if (content == string.Empty)
-				return;
 
 			responseBuilder.AppendLine();
 			responseBuilder.Append(content);
